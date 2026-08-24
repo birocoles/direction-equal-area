@@ -1,8 +1,7 @@
 import numpy as np
-from numpy.typing import NDArray
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
-
+import matplotlib.colors as mcolors
 
 def asarray_1d_float(x):
     """
@@ -236,4 +235,76 @@ def plot_net(
         ax.plot(c1, c2, linestyle='-', linewidth=0.3, color=3*(0.3,))
 
 
-def plot_points():
+def plot_points(ax, dec, inc, projection = ("eqarea", "polar"), size=7, color='b'):
+    """
+    Plot points defined by declination and inclination values.
+
+    Parameters
+    ----------
+    ax: Axes
+        Individual matplotlib plotting area.
+    dec, inc: NumPy arrays 1D
+        NumPy arrays 1D containing the declination and inclination of the points.
+    projection: 2-tuple or 2-list
+        Defines the projection type. The possible options are:
+        ("none", "polar") -> polar net without projection.
+        ("none", "equatorial") -> equatorial net without projection.
+        ("eqarea", "polar") -> polar equal-area net.
+        ("eqarea", "equatorial") -> equatorial equal-area net.
+        Default is ("eqarea", "polar").
+    size: integer
+        Positive integer defining the marker size.
+    color: matplotlib color
+        Valid matplotlib color that can be verified with matplotlib.colors.mcolors.
+    """
+    if not isinstance(ax, Axes):
+        raise ValueError("ax must be an individual matplotlib plotting area.")
+    # dec and inc are verified within the 'di2xyz' function
+    if not isinstance(projection, (tuple, list)):
+        raise ValueError("projection must be a tuple or list")
+    if len(projection) != 2:
+        raise ValueError("projection must have two elements.")
+    if any(p not in ["none", "eqarea", "polar", "equatorial"] for p in projection):
+        raise ValueError("Invalid projection.")
+    if (not isinstance(size, int)) or (size <= 0):
+        raise ValueError("size must be a positive integer.")
+    if not mcolors.is_color_like(color):
+        raise ValueError("Invalid matplotlib color.")
+
+    # Compute the Cartesian coordinates
+    x, y, z = di2xyz(dec, inc)
+
+    if projection[1] == "polar":
+        if projection[0] == "none":
+            c2, c1 = x, y
+        else: # projection[1] == "eqarea"
+            c2, c1 = xyz2equal_area_polar(x, y, z)
+        # negative z
+        negative_z = (z < 0)
+        # Plot points with negative z
+        ax.scatter(
+            c1[negative_z], c2[negative_z], 
+            s=size, marker='o', edgecolor=color, facecolor='none', linewidths=1
+            )
+        # Plot points with positive z
+        ax.scatter(
+            c1[~negative_z], c2[~negative_z], 
+            s=size, marker='o', edgecolor=color, facecolor=color, linewidths=1
+            )
+    else: # projection[1] == "equatorial"
+        if projection[0] == "none":
+            c1, c2 = y, z
+        else: # projection[1] == "eqarea"
+            c1, c2 = xyz2equal_area_equatorial(x, y, z)
+        # negative x
+        negative_x = (x < 0)
+        # Plot points with negative x
+        ax.scatter(
+            c1[negative_x], c2[negative_x], 
+            s=size, marker='o', edgecolor=color, facecolor='none', linewidths=1
+            )
+        # Plot points with positive x
+        ax.scatter(
+            c1[~negative_x], c2[~negative_x], 
+            s=size, marker='o', edgecolor=color, facecolor=color, linewidths=1
+            )
