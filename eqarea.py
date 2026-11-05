@@ -5,17 +5,17 @@ import matplotlib.colors as mcolors
 
 def asarray_1d_float(x):
     """
-    Verify if x is a Numpy array 1D containing floats. 
+    Verify if x can be converted to a Numpy array 1D containing floats. 
     """
     part_1 = "x could not be converted to a "
-    part_2 = "0D or 1D "
+    part_2 = "1D "
     part_3 = "numpy array of floats"
     try:
-        X = np.asarray(x, dtype=float)
+        X = np.atleast_1d(np.asarray(x, dtype=float))
     except (TypeError, ValueError) as e:
         error_message = part_1 + part_3
         raise ValueError(error_message)
-    if (X.ndim != 0) and (X.ndim != 1):    
+    if (X.ndim != 1):
         error_message = part_1 + part_2 + part_3
         raise ValueError(error_message)
     return X
@@ -41,7 +41,7 @@ def di2xyz(dec, inc):
     D = asarray_1d_float(dec)
     I = asarray_1d_float(inc)
     if D.size != I.size:
-        raise ValueError("dec and inc must have the same size.")
+        raise ValueError("dec and inc must have the same number of elements.")
     # Convert degrees to radians
     D = np.deg2rad(D)
     I = np.deg2rad(I)
@@ -192,6 +192,9 @@ def plot_net(
     if any(p not in ["none", "eqarea", "polar", "equatorial"] for p in projection):
         raise ValueError("Invalid projection.")
 
+    # Set axes scale
+    ax.axis('scaled')
+    
     # Declination and inclination values
     decs = np.linspace(dec_limits[0], dec_limits[1], 100)
     incs = np.linspace(inc_limits[0], inc_limits[1], 50)
@@ -234,8 +237,19 @@ def plot_net(
         # Plot the line with constant declination dec
         ax.plot(c1, c2, linestyle='-', linewidth=0.3, color=3*(0.3,))
 
+    # Set axes limits
+    if projection[1] == "polar":
+        ax.set_xlim(-1.1, 1.1) # original y axis (absissa - horizontal)
+        ax.set_ylim(-1.1, 1.1) # original x axis (ordinate - vertical)
+    else: # projection[1] == "equatorial"
+        ax.set_xlim(-1.1, 1.1) # original y axis (absissa - horizontal)
+        ax.set_ylim( 1.1,-1.1) # inverted z axis (ordinate - vertical)
 
-def plot_points(ax, dec, inc, projection = ("eqarea", "polar"), size=7, color='b'):
+    # Remove axes
+    ax.axis("off")
+
+
+def plot_points(ax, dec, inc, projection = ("eqarea", "polar"), size=7, color='k', label=None):
     """
     Plot points defined by declination and inclination values.
 
@@ -256,6 +270,9 @@ def plot_points(ax, dec, inc, projection = ("eqarea", "polar"), size=7, color='b
         Positive integer defining the marker size.
     color: matplotlib color
         Valid matplotlib color that can be verified with matplotlib.colors.mcolors.
+        Default is black 'k'.
+    label : string
+        Define a label for the plotted points. Default is None.
     """
     if not isinstance(ax, Axes):
         raise ValueError("ax must be an individual matplotlib plotting area.")
@@ -270,6 +287,8 @@ def plot_points(ax, dec, inc, projection = ("eqarea", "polar"), size=7, color='b
         raise ValueError("size must be a positive integer.")
     if not mcolors.is_color_like(color):
         raise ValueError("Invalid matplotlib color.")
+    if (not isinstance(label, str)) and (label is not None):
+        raise ValueError("label must be a string or None.")
 
     # Compute the Cartesian coordinates
     x, y, z = di2xyz(dec, inc)
@@ -282,15 +301,17 @@ def plot_points(ax, dec, inc, projection = ("eqarea", "polar"), size=7, color='b
         # negative z
         negative_z = (z < 0)
         # Plot points with negative z
-        ax.scatter(
-            c1[negative_z], c2[negative_z], 
-            s=size, marker='o', edgecolor=color, facecolor='none', linewidths=1
-            )
+        if any(negative_z):
+            ax.scatter(
+                c1[negative_z], c2[negative_z], 
+                s=size, marker='o', edgecolor=color, facecolor='none', linewidths=1, label=label
+                )
         # Plot points with positive z
-        ax.scatter(
-            c1[~negative_z], c2[~negative_z], 
-            s=size, marker='o', edgecolor=color, facecolor=color, linewidths=1
-            )
+        if any(~negative_z):
+            ax.scatter(
+                c1[~negative_z], c2[~negative_z], 
+                s=size, marker='o', edgecolor=color, facecolor=color, linewidths=1, label=label
+                )
     else: # projection[1] == "equatorial"
         if projection[0] == "none":
             c1, c2 = y, z
@@ -299,12 +320,14 @@ def plot_points(ax, dec, inc, projection = ("eqarea", "polar"), size=7, color='b
         # negative x
         negative_x = (x < 0)
         # Plot points with negative x
-        ax.scatter(
-            c1[negative_x], c2[negative_x], 
-            s=size, marker='o', edgecolor=color, facecolor='none', linewidths=1
-            )
+        if any(negative_x):
+            ax.scatter(
+                c1[negative_x], c2[negative_x], 
+                s=size, marker='o', edgecolor=color, facecolor='none', linewidths=1, label=label
+                )
         # Plot points with positive x
-        ax.scatter(
-            c1[~negative_x], c2[~negative_x], 
-            s=size, marker='o', edgecolor=color, facecolor=color, linewidths=1
-            )
+        if any(~negative_x):
+            ax.scatter(
+                c1[~negative_x], c2[~negative_x], 
+                s=size, marker='o', edgecolor=color, facecolor=color, linewidths=1, label=label
+                )
