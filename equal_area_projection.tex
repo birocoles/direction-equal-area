@@ -1,0 +1,70 @@
+\documentclass[portuguese,10pt,a4paper,final]{article}%
+\usepackage[T1]{fontenc}%
+\usepackage{babel}%
+\usepackage{nicefrac}%
+\usepackage{array}%
+\usepackage{graphicx}%
+\usepackage{multirow}%
+\usepackage{amsmath,amssymb,amsfonts}%
+\usepackage{amsthm}%
+\usepackage{mathrsfs}%
+
+\title{Equal-area projection}
+\author{Vanderlei C. Oliveira Jr.}
+\date{November 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{subequations}
+	\begin{align}
+		x &= H \: \cos D \\
+		y &= H \: \sin D \\
+		z &= R \sin I \\
+		H &= \sqrt{x^2 + y^2} = R \cos I \\
+		R &= \sqrt{x^2 + y^2 + z^2}
+	\end{align}
+\end{subequations}
+
+\begin{subequations}
+	\begin{align}
+		A^{+}_{cap} &=
+			\int\limits_{-\pi}^{\pi}\int\limits_{I}^{\nicefrac{\pi}{2}}
+			R^{2} \: \cos I' \: dI'dD' = 2\pi R^{2} (1 - \sin I) \: , \quad I > 0\\
+		A^{-}_{cap} &=
+			\int\limits_{-\pi}^{\pi}\int\limits_{-\nicefrac{\pi}{2}}^{I}
+			R^{2} \: \cos I' \: dI'dD' = 2\pi R^{2} (1 - \sin I) \: , \quad I < 0
+	\end{align}
+\end{subequations}
+
+\begin{equation}
+	A_{cap} = 2\pi R^{2} (1 - \sin \left| I \right|)
+\end{equation}
+
+\begin{equation}
+	A_{circ} = \pi r^{2}
+\end{equation}
+
+\begin{equation}
+	\frac{A_{circ}}{A_{cap}} = \frac{1}{2} \quad \longrightarrow \quad r = R \sqrt{1 - \sin \left| I \right|}
+\end{equation}
+
+\begin{subequations}
+	\begin{align}
+		\tilde{r}_{xy} &= \sqrt{1 - \left| z \right|} \\
+		x' &= \tilde{r}_{xy} \: \cos D = \tfrac{\tilde{r}_{xy}}{\sqrt{x^{2} + y^{2}}} \: x \\
+		y' &= \tilde{r}_{xy} \: \sin D = \tfrac{\tilde{r}_{xy}}{\sqrt{x^{2} + y^{2}}} \: y
+	\end{align}
+\end{subequations}
+
+\begin{subequations}
+	\begin{align}
+		\tilde{r}_{yz} &= \sqrt{1 - \left| x \right|} \\
+		y' &= \tfrac{\tilde{r}_{yz}}{\sqrt{y^{2} + z^{2}}} \: y \\
+		z' &= \tfrac{\tilde{r}_{yz}}{\sqrt{y^{2} + z^{2}}} \: z
+	\end{align}
+\end{subequations}
+
+
+\end{document}
